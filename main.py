@@ -18,6 +18,7 @@ def f(x, parameters):
         y += parameters[j] * math.pow(x, j)
     return y
 
+
 def getData(N, variance):
     sigma = math.sqrt(variance)
     z = np.random.normal(0, sigma, N)
@@ -46,27 +47,26 @@ def getMSE(x, y, parameters):
 def fitData(x, y, initial_paramaters, learning_rate):
     d = len(initial_paramaters)
     N = len(x)
-    epsilon = 0.000001
+    epsilon = 0.0000001
 
     theta_old = np.array(initial_paramaters)
     temp_theta = np.array(theta_old)
-    count = 0
+    loopCounter = 0
     while True:
-        sum = 0
-        sum2 = 0
+        sum_vec = np.zeros(d)
         for i in range(N):
-            sum += 2 * (y[i] - f(x[i], theta_old))
-            sum2 += 2 * (y[i] - f(x[i], theta_old)) * x[i]
-        temp_theta[0] += learning_rate * (sum / N)
-        for j in range(1, d):
-            temp_theta[j] += learning_rate * (sum2 / N)
+            x_vec = np.array([math.pow(x[i], j) for j in range(d)])
+            sum_vec += (y[i] - f(x[i], theta_old)) * x_vec
+        temp_theta += (learning_rate * 2 / (1.0 * N)) * sum_vec
 
         if abs(temp_theta[0] - theta_old[0]) < epsilon:
+            print("optimal params found")
             break
-        elif count > 10000:
+        elif loopCounter > 10000:
+            print("loop counter reached maximum, set a larger learning rate to get a better approximation")
             break
         theta_old = np.array(temp_theta)
-        count += 1
+        loopCounter += 1
 
     x_new, y_new = getData(N, 0.015)
 
@@ -105,15 +105,19 @@ def experiment(N, d, noise_variance):
     return E_in_avg, E_out_avg, E_bias, x_final, y_final, optimal_params_avg
 
 
-# x, y = getData(500, 0.015)
-# print('Before - getMSE:', getMSE(x, y, np.array([0.5, 0])))
-# optimal_params, E_in, E_out = fitData(x, y, np.array([0.2, 1.1, 0.4, 2.0]), 0.2)
-# print('After  - getMSE:', getMSE(x, y, optimal_params))
-# print('optimal_params', optimal_params)
-# print('E_in:', E_in)
-# print('E_out:', E_out)
-# reg_x = sorted(x)
-# reg_y = [f(i, optimal_params) for i in reg_x]
+x, y = getData(50, 0.015)
+print('Before - getMSE:', getMSE(x, y, np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])))
+optimal_params, E_in, E_out = fitData(x, y, np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), 0.5)
+print('After  - getMSE:', getMSE(x, y, optimal_params))
+print('optimal_params', optimal_params)
+print('E_in:', E_in)
+print('E_out:', E_out)
+reg_x = sorted(x)
+reg_y = [f(i, optimal_params) for i in reg_x]
+
+plt.scatter(x, y)
+plt.plot(reg_x, reg_y, 'r-')
+plt.show()
 
 # E_in_avg, E_out_avg, E_bias, x, y, optimal_params = experiment(2, 0, 0.01)
 # print('E_in_avg:', E_in_avg)
@@ -128,25 +132,25 @@ def experiment(N, d, noise_variance):
 # plt.ylabel('y')
 # plt.show()
 
-fig, axs = plt.subplots(2, 3)
-
-N_list = np.array([2, 5, 10, 20, 50, 100, 200])
-d_list = np.arange(6)
-sigma_list = np.array([0.01, 0.1, 1])
-
-for row in range(2):
-    for col in range(3):
-        i = 3 * row + col
-        E_in_avg, E_out_avg, E_bias, x, y, optimal_params = experiment(100, d_list[i], 0.01)
-        axs[row, col].scatter(x, y)
-        x_reg = sorted(x)
-        y_reg = [f(k, optimal_params) for k in x_reg]
-        axs[row, col].plot(x_reg, y_reg)
-        axs[row, col].set_title('N={}, d={}, variance={}'.format(100, d_list[i], 0.01))
-        plt.ylim(-1, 1)
-        plt.xlim(0, 1)
-
-plt.show()
+# fig, axs = plt.subplots(2, 3)
+#
+# N_list = np.array([2, 5, 10, 20, 50, 100, 200])
+# d_list = np.arange(6)
+# sigma_list = np.array([0.01, 0.1, 1])
+#
+# for row in range(2):
+#     for col in range(3):
+#         i = 3 * row + col
+#         E_in_avg, E_out_avg, E_bias, x, y, optimal_params = experiment(100, d_list[i], 0.01)
+#         axs[row, col].scatter(x, y)
+#         x_reg = sorted(x)
+#         y_reg = [f(k, optimal_params) for k in x_reg]
+#         axs[row, col].plot(x_reg, y_reg)
+#         axs[row, col].set_title('N={}, d={}, variance={}'.format(100, d_list[i], 0.01))
+#         plt.ylim(-1, 1)
+#         plt.xlim(0, 1)
+#
+# plt.show()
 
 # axs[0, 0].scatter(x, y)
 # x_reg = sorted(x)
